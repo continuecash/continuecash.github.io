@@ -196,13 +196,14 @@ async function init() {
 	} 
 }
 
-function checkAllowanceAndBalance(contract, symbol, myAddr, amount, decimals) {
+async function checkAllowanceAndBalance(contract, symbol, myAddr, amount, decimals) {
 	const allowanceBN = await contract.allowance(myAddr, window.MarketAddress)
 	const allowance = ethers.utils.formatUnits(allowanceBN, decimals)*1.0
 	if(allowance < amount) {
 		new Attention.Confirm({title: `Approve ${symbol}`,
 			content: `You did not approve enough ${symbol} to continue.cash, do you want to approve now? After sending the approving transaction, you can retry.`,
 			onConfirm(component) {
+				const MaxAmount = ethers.utils.parseUnits('999999999')
 				contract.approve(window.MarketAddress, MaxAmount)
 			},
 			onCancel(component) {}});
@@ -234,8 +235,8 @@ async function CreateRobot() {
 	var robotInfo = stockAmountBN.mul(ethers.BigNumber.from(2).pow(96)).add(moneyAmountBN)
 	robotInfo = robotInfo.mul(ethers.BigNumber.from(2).pow(32)).add(highPrice)
 	robotInfo = robotInfo.mul(ethers.BigNumber.from(2).pow(32)).add(lowPrice)
-	const provider = new ethers.providers.Web3Provider(window.ethereum);
-	const signer = provider.getSigner();
+	// const provider = new ethers.providers.Web3Provider(window.ethereum);
+	// const signer = provider.getSigner();
 	const marketContract = new ethers.Contract(window.MarketAddress, CCABI, provider).connect(signer);
 	await marketContract.createRobot(robotInfo)
 }
