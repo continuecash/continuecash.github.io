@@ -55,8 +55,8 @@ const SEP20ABI = [
     "function approve(address spender, uint256 amount) external returns (bool)",
 ]
 
-const ImplAddr = ""
-const FactoryAddr = ""
+const ImplAddr = "0x938F4950CA33E63b1Fb4dE042529D66448B5Cb91"
+const FactoryAddr = "0xFF0Eb1d249C7eC0486723049E0056b120aE5b617"
 
 const CCABI = [
 "function getAllRobots() view public returns (uint[] memory robotsIdAndInfo)",
@@ -162,7 +162,8 @@ async function init() {
 
 	var factoryContract = new ethers.Contract(FactoryAddr, FactoryABI, provider).connect(signer)
 	window.MarketAddress = await factoryContract.getAddress(stockAddr, moneyAddr, ImplAddr)
-	var code = provider.getCode(window.MarketAddress)
+	// console.log('MarketAddress:', window.MarketAddress);
+	var code = await provider.getCode(window.MarketAddress)
 	if(code == "0x") {
 		new Attention.Confirm({title: "Market Not Exist",
 			content: `The market ${stockSymbol}/${moneySymbol} has not been created, do you want to create it?`,
@@ -199,6 +200,7 @@ async function init() {
 async function checkAllowanceAndBalance(contract, symbol, myAddr, amount, decimals) {
 	const allowanceBN = await contract.allowance(myAddr, window.MarketAddress)
 	const allowance = ethers.utils.formatUnits(allowanceBN, decimals)*1.0
+	// console.log(symbol, ', allowance:', allowance);
 	if(allowance < amount) {
 		new Attention.Confirm({title: `Approve ${symbol}`,
 			content: `You did not approve enough ${symbol} to continue.cash, do you want to approve now? After sending the approving transaction, you can retry.`,
@@ -245,17 +247,19 @@ async function getAllRobots(onlyForAddr) {
 	const provider = new ethers.providers.Web3Provider(window.ethereum)
 	const marketContract = new ethers.Contract(window.MarketAddress, CCABI, provider)
 	var allRobotsArr = await marketContract.getAllRobots()
+	// console.log('allRobotsArr:', allRobotsArr);
 	var allRobots = []
 	var twoPow32 = ethers.BigNumber.from(2).pow(32)
 	var twoPow96 = ethers.BigNumber.from(2).pow(96)
 	window.RobotsMap = {}
 	for(var i=0; i<allRobotsArr.length; i+=2) {
-		var fullId = allRobotsArr[2*i]
-		var robot = {fullId: fullId.toHexString(), index: i}
+		var fullId = allRobotsArr[i]
+		// console.log('i:', i, 'fullId:', fullId);
+		var robot = {fullId: fullId.toHexString(), index: i/2}
 		robot.shortId = fullId.mod(twoPow96).toNumber()
 		robot.ownerAddr = ethers.utils.getAddress(fullId.div(twoPow96).toHexString())
 		if(onlyForAddr && onlyForAddr != robot.ownerAddr) {continue}
-		var info = allRobotsArr[2*i+1]
+		var info = allRobotsArr[i+1]
 		robot.lowPrice = ethers.utils.formatUnits(unpackPrice(info.mod(twoPow32)))*1.0
 		info = info.div(twoPow32)
 		robot.highPrice = ethers.utils.formatUnits(unpackPrice(info.mod(twoPow32)))*1.0
@@ -275,7 +279,7 @@ async function listMyRobots() {
 	const signer = provider.getSigner();
 	const myAddr = await signer.getAddress();
 	
-	var robots = getAllRobots(myAddr);
+	var robots = await getAllRobots(myAddr);
 	if(robots.length == 0) {
 		document.getElementById("deleteDiv").innerHTML = "<p>You have no robots on duty!</p>"
 		return
@@ -293,7 +297,7 @@ async function listMyRobots() {
 }
 
 async function listRobotsForBuying() {
-	var robots = getAllRobots("");
+	var robots = await getAllRobots("");
 	if(robots.length == 0) {
 		document.getElementById("buyDiv").innerHTML += "<p>Found no robots to buy stock from.</p>"
 		return
@@ -312,7 +316,7 @@ async function listRobotsForBuying() {
 }
 
 async function listRobotsForSelling() {
-	var robots = getAllRobots("");
+	var robots = await getAllRobots("");
 	if(robots.length == 0) {
 		document.getElementById("sellDiv").innerHTML += "<p>Found no robots to sell stock to.</p>"
 		return
@@ -335,11 +339,11 @@ async function Buy(robotId) {
 	const signer = provider.getSigner();
 	const myAddr = await signer.getAddress();
 
-	var moneyDelta = document.getElementById("moneyDelta").value*1.0
+	var moneyDelta = document.getElementById("moneyDelta").value //*1.0
 	var moneyDeltaBN = ethers.utils.parseUnits(moneyDelta, window.moneyDecimals)
 	var robot = window.RobotsMap[robotId]
 
-	var stockDelta = moneyDeta / robot.highPrice
+	var stockDelta = moneyDelta / robot.highPrice
 	if(stockDelta > robot.stockAmount) {
         	window.AlertDlg = new Attention.Alert({title: "Robot has not enough stock",
 				content: `The robot has only ${robot.stockAmount} ${window.stockSymbol}, but you want ${stockDelta} ${window.stockSymbol}`});
@@ -348,7 +352,7 @@ async function Buy(robotId) {
 	checkAllowanceAndBalance(window.moneyContract, window.moneySymbol, myAddr, moneyDelta, window.moneyDecimals)
 
 	const marketContract = new ethers.Contract(window.MarketAddress, CCABI, provider).connect(signer);
-	await marketContract.buyFromRobot(robotInfo, moneyDeltaBN)
+	await marketContract.buyFromRobot(robotId, moneyDeltaBN)
 }
 
 async function Sell(robotId) {
@@ -356,10 +360,10 @@ async function Sell(robotId) {
 	const signer = provider.getSigner();
 	const myAddr = await signer.getAddress();
 
-	var stockDelta = document.getElementById("stockDelta").value*1.0
+	var stockDelta = document.getElementById("stockDelta").value//*1.0
 	var stockDeltaBN = ethers.utils.parseUnits(stockDelta, window.stockDecimals)
 	var robot = window.RobotsMap[robotId]
-	var moneyDelta = stockDeta * robot.lowPrice
+	var moneyDelta = stockDelta * robot.lowPrice
 	if(moneyDelta > robot.moneyAmount) {
         	window.AlertDlg = new Attention.Alert({title: "Robot has not enough money",
 				content: `The robot has only ${robot.moneyAmount} ${window.moneySymbol}, but must pay you ${moneyDelta} ${window.moneySymbol}`});
@@ -368,9 +372,20 @@ async function Sell(robotId) {
 	checkAllowanceAndBalance(window.stockContract, window.stockSymbol, myAddr, stockDelta, window.stockDecimals)
 
 	const marketContract = new ethers.Contract(window.MarketAddress, CCABI, provider).connect(signer);
-	await marketContract.sellToRobot(robotInfo, stockDeltaBN)
+	await marketContract.sellToRobot(robotId, stockDeltaBN)
 }
 
+async function DeleteRobot(idx, id) {
+	const provider = new ethers.providers.Web3Provider(window.ethereum);
+	const signer = provider.getSigner();
+	const marketContract = new ethers.Contract(window.MarketAddress, CCABI, provider).connect(signer);
+
+	const myAddr = await signer.getAddress();
+	var robots = await getAllRobots(myAddr);
+	// console.log('robots:', robots);
+	// console.log('DeleteRobot, idx:', idx, 'id:', id);
+	await marketContract.deleteRobot(idx, id);
+}
 
 window.onload = init;
 
