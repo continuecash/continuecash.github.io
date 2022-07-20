@@ -161,7 +161,7 @@ async function init() {
 	}
 
 	var factoryContract = new ethers.Contract(FactoryAddr, FactoryABI, provider).connect(signer)
-	window.MarketAddress = factoryContract.getAddress(stockAddr, moneyAddr, ImplAddr)
+	window.MarketAddress = await factoryContract.getAddress(stockAddr, moneyAddr, ImplAddr)
 	var code = provider.getCode(window.MarketAddress)
 	if(code == "0x") {
 		new Attention.Confirm({title: "Market Not Exist",
@@ -222,14 +222,14 @@ async function CreateRobot() {
 	const signer = provider.getSigner();
 	const myAddr = await signer.getAddress();
 
-	var stockAmount = 1.0*document.getElementById("stockAmount").value
-	var moneyAmount = 1.0*document.getElementById("moneyAmount").value
+	var stockAmount = document.getElementById("stockAmount").value //* 1.0
+	var moneyAmount = document.getElementById("moneyAmount").value //* 1.0
 
 	checkAllowanceAndBalance(window.stockContract, window.stockSymbol, myAddr, stockAmount, window.stockDecimals)
 	checkAllowanceAndBalance(window.moneyContract, window.moneySymbol, myAddr, moneyAmount, window.moneyDecimals)
 
-	var stockAmountBN = ethers.utils.parseUnits(stockAmount)
-	var moneyAmountBN = ethers.utils.parseUnits(moneyAmount)
+	var stockAmountBN = ethers.utils.parseUnits(stockAmount, window.stockDecimals)
+	var moneyAmountBN = ethers.utils.parseUnits(moneyAmount, window.moneyDecimals)
 	var highPrice = packPrice(ethers.utils.parseUnits(document.getElementById("highPrice").value))
 	var lowPrice = packPrice(ethers.utils.parseUnits(document.getElementById("lowPrice").value))
 	var robotInfo = stockAmountBN.mul(ethers.BigNumber.from(2).pow(96)).add(moneyAmountBN)
