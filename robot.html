@@ -393,7 +393,7 @@ async function Sell(robotId) {
 	console.log('val:', val);
 
 	const marketContract = new ethers.Contract(window.MarketAddress, CCABI, provider).connect(signer);
-	await marketContract.sellToRobot(robotId, stockDeltaBN)
+	await marketContract.sellToRobot(robotId, stockDeltaBN, val)
 }
 
 async function DeleteRobot(idx, id) {
