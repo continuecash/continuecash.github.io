@@ -360,8 +360,14 @@ async function Buy(robotId) {
 	}
 	checkAllowanceAndBalance(window.moneyContract, window.moneySymbol, myAddr, moneyDelta, window.moneyDecimals)
 
+	let val = null;
+	if (window.moneyAddr == '0x0000000000000000000000000000000000002711') {
+		val = {value: moneyDeltaBN};
+	}
+	console.log('val:', val);
+
 	const marketContract = new ethers.Contract(window.MarketAddress, CCABI, provider).connect(signer);
-	await marketContract.buyFromRobot(robotId, moneyDeltaBN)
+	await marketContract.buyFromRobot(robotId, moneyDeltaBN, val)
 }
 
 async function Sell(robotId) {
@@ -379,6 +385,12 @@ async function Sell(robotId) {
 		return false;
 	}
 	checkAllowanceAndBalance(window.stockContract, window.stockSymbol, myAddr, stockDelta, window.stockDecimals)
+
+	let val = null;
+	if (window.stockAddr == '0x0000000000000000000000000000000000002711') {
+		val = {value: stockDeltaBN};
+	}
+	console.log('val:', val);
 
 	const marketContract = new ethers.Contract(window.MarketAddress, CCABI, provider).connect(signer);
 	await marketContract.sellToRobot(robotId, stockDeltaBN)
