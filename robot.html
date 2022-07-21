@@ -13,8 +13,8 @@
 <body>
 <body style="margin: 0 auto; width: 380px">
 	<p>Your Address:<br><u id="signerAddress"></u></p>
-	<p>Stock:&nbsp;&nbsp;<u id="stockURL"></u></p>
-	<p>Money:&nbsp;&nbsp;<u id="moneyURL"></u></p>
+	<p>Stock:&nbsp;&nbsp;<u id="stockURL"></u> ( You have: <span id="stockBal"></span> )</p>
+	<p>Money:&nbsp;&nbsp;<u id="moneyURL"></u> ( You have: <span id="moneyBal"></span> )</p>
 
 	<div id="createDiv" style="display: none">
 		<p>How much stock will be deposited?<br>
@@ -141,6 +141,9 @@ async function init() {
 		window.moneyDecimals = await window.moneyContract.decimals()
 		var moneyURL = `<a target="_blank" href="https://smartscan.cash/address/${moneyAddr}">${moneySymbol}</a>`
 		document.getElementById("moneyURL").innerHTML = moneyURL
+
+		const moneyAmt = await window.moneyContract.balanceOf(myAddr);
+		document.getElementById("moneyBal").innerHTML = ethers.utils.formatUnits(moneyAmt, moneyDecimals);
 	} catch(e) {
         	window.AlertDlg = new Attention.Alert({title: "Incorrect Address",
         	  content: "Incorrect Address for Money: "+moneyAddr});
@@ -154,6 +157,9 @@ async function init() {
 		window.stockDecimals = await window.stockContract.decimals()
 		var stockURL = `<a target="_blank" href="https://smartscan.cash/address/${stockAddr}">${stockSymbol}</a>`
 		document.getElementById("stockURL").innerHTML = stockURL
+
+		const stockAmt = await window.stockContract.balanceOf(myAddr);
+		document.getElementById("stockBal").innerHTML = ethers.utils.formatUnits(stockAmt, stockDecimals);
 	} catch(e) {
         	window.AlertDlg = new Attention.Alert({title: "Incorrect Address",
         	  content: "Incorrect Address for Stock: "+stockAddr});
