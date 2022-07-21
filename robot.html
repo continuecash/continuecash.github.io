@@ -13,8 +13,8 @@
 <body>
 <body style="margin: 0 auto; width: 380px">
 	<p>Your Address:<br><u id="signerAddress"></u></p>
-	<p>Stock:<br><u id="stockURL"></u></p>
-	<p>Money:<br><u id="moneyURL"></u></p>
+	<p>Stock:&nbsp;&nbsp;<u id="stockURL"></u></p>
+	<p>Money:&nbsp;&nbsp;<u id="moneyURL"></u></p>
 
 	<div id="createDiv" style="display: none">
 		<p>How much stock will be deposited?<br>
@@ -38,12 +38,12 @@
 
 	<div id="buyDiv" style="display: none">
 		<p>How much money do you want to spend?<br>
-		<input class="input is-info is-small" type="number" step="any" id="moneyDelta"></p>
+		<input class="input is-info is-small" type="number" step="any" id="moneyDelta"></p><br>
 	</div>
 
 	<div id="sellDiv" style="display: none">
 		<p>How much stock do you want to sell?<br>
-		<input class="input is-info is-small" type="number" step="any" id="stockDelta"></p>
+		<input class="input is-info is-small" type="number" step="any" id="stockDelta"></p><br>
 	</div>
 </div>
 <script>
@@ -295,7 +295,7 @@ async function listMyRobots() {
 	}
 	var htmlStr = "<p>"
 	for(var i=0; i<robots.length; i++) {
-		htmlStr += `<b>${robots[i].shortId}</b>&nbsp;`
+		htmlStr += `<b>Robot#${robots[i].shortId+1}</b>&nbsp;`
 		htmlStr += `<button onclick="DeleteRobot(${robots[i].index}, '${robots[i].fullId}')">Delete</button>&nbsp;`
 		htmlStr += `Stock: ${robots[i].stockAmount}&nbsp;`
 		htmlStr += `Money: ${robots[i].moneyAmount}&nbsp;`
@@ -316,7 +316,7 @@ async function listRobotsForBuying() {
 	});
 	var htmlStr = "<p>"
 	for(var i=0; i<robots.length; i++) {
-		htmlStr += `<b>${robots[i].shortId}</b>&nbsp;`
+		htmlStr += `<b>Robot#${robots[i].shortId+1}</b>&nbsp;`
 		htmlStr += `<button onclick="Buy('${robots[i].fullId}')">Buy From It</button>&nbsp;`
 		htmlStr += `Stock: ${robots[i].stockAmount}&nbsp;`
 		htmlStr += `Price: ${robots[i].highPrice}</p>`
@@ -335,7 +335,7 @@ async function listRobotsForSelling() {
 	});
 	var htmlStr = "<p>"
 	for(var i=0; i<robots.length; i++) {
-		htmlStr += `<b>${robots[i].shortId}</b>&nbsp;`
+		htmlStr += `<b>Robot#${robots[i].shortId+1}</b>&nbsp;`
 		htmlStr += `<button onclick="Sell('${robots[i].fullId}')">Sell To It</button>&nbsp;`
 		htmlStr += `Money: ${robots[i].moneyAmount}&nbsp;`
 		htmlStr += `Price: ${robots[i].lowPrice}</p>`
