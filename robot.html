@@ -240,7 +240,16 @@ async function CreateRobot() {
 	// const provider = new ethers.providers.Web3Provider(window.ethereum);
 	// const signer = provider.getSigner();
 	const marketContract = new ethers.Contract(window.MarketAddress, CCABI, provider).connect(signer);
-	await marketContract.createRobot(robotInfo)
+
+	let val = null;
+	if (window.stockAddr == '0x0000000000000000000000000000000000002711') {
+		val = {value: stockAmountBN};
+	} else if (window.moneyAddr == '0x0000000000000000000000000000000000002711') {
+		val = {value: moneyAmountBN};
+	}
+	console.log('val:', val);
+
+	await marketContract.createRobot(robotInfo, val)
 }
 
 async function getAllRobots(onlyForAddr) {
