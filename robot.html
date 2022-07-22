@@ -13,6 +13,7 @@
 <body>
 <body style="margin: 0 auto; width: 380px">
 	<p>Your Address:<br><u id="signerAddress"></u></p>
+	<p>Market Address:<br><u id="marketAddress"></u></p>
 	<p>Stock:&nbsp;&nbsp;<u id="stockURL"></u> ( You have: <span id="stockBal"></span> )</p>
 	<p>Money:&nbsp;&nbsp;<u id="moneyURL"></u> ( You have: <span id="moneyBal"></span> )</p>
 
@@ -179,6 +180,8 @@ async function init() {
 			onCancel(component) {}});
 		return
 	}
+
+	document.getElementById("marketAddress").innerText = window.MarketAddress;
 
 	const task = url.searchParams.get("task");
 	if(task == "create") {
